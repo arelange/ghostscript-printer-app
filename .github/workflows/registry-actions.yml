@@ -23,18 +23,11 @@ on:
 
 jobs:
   build-rock:
-    strategy:
-      matrix:
-        include:
-        - arch: 'amd64'
-          runner: ubuntu-22.04
-        - arch: 'arm64'
-          runner: ubuntu-22.04-arm
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          
+
       - name: Pack with Rockcraft
         uses: canonical/craft-actions/rockcraft-pack@main
         id: rockcraft
@@ -42,7 +35,7 @@ jobs:
       - name: Upload Rock Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cups-rock-${{ matrix.arch }}
+          name: cups-rock
           path: ${{ steps.rockcraft.outputs.rock }}
 
   publish-rock:
@@ -56,8 +49,7 @@ jobs:
       - name: Download Rock Artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: cups-rock-*
-          merge-multiple: true
+          name: cups-rock
 
       - name: Install Dependencies
         run: |
@@ -92,21 +84,9 @@ jobs:
         run: |
           IMAGE="$(yq '.name' rockcraft.yaml)"
           VERSION="$(yq '.version' rockcraft.yaml)"
+          ROCK="$(ls *.rock | tail -n 1)"
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
-          # Upload each rock to the container registry
-          declare -a digests=()
-          for rock in *.rock; do
-            digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
-            digests+=($digest)
-            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} docker-daemon:"${ORG_NAME}/${IMAGE}:${digest}"
-          done
-          # Create and upload a multi-arch manifest
-          args=("manifest" "create" "${multi_arch_image_name}")
-          for digest in "${digests[@]}"; do
-              args+=(--amend "${target_image}@${digest}")
-          done
-          docker "${args[@]}"
-          manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-edge)
+          sudo rockcraft.skopeo --insecure-policy copy oci-archive:"${ROCK}" docker-daemon:"${ORG_NAME}/${IMAGE}:${VERSION}-edge"
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
@@ -127,21 +107,9 @@ jobs:
         run: |
             IMAGE="$(yq '.name' rockcraft.yaml)"
             VERSION="$(yq '.version' rockcraft.yaml)"
+            ROCK="$(ls *.rock | tail -n 1)"
             ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
-          # Upload each rock to the container registry
-          declare -a digests=()
-          for rock in *.rock; do
-            digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
-            digests+=($digest)
-            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} docker-daemon:"${ORG_NAME}/${IMAGE}:${digest}"
-          done
-          # Create and upload a multi-arch manifest
-          args=("manifest" "create" "${multi_arch_image_name}")
-          for digest in "${digests[@]}"; do
-              args+=(--amend "${target_image}@${digest}")
-          done
-          docker "${args[@]}"
-          manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-stable)
+            sudo rockcraft.skopeo --insecure-policy copy oci-archive:"${ROCK}" docker-daemon:"${ORG_NAME}/${IMAGE}:${VERSION}-stable"
             # Push to Docker Hub
             # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${USERNAME}:${VERSION}-stable
             # docker push ${USERNAME}/${IMAGE}:${VERSION}-stable
