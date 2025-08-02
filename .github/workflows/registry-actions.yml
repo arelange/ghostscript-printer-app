@@ -98,12 +98,12 @@ jobs:
           for rock in *.rock; do
             digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
             digests+=($digest)
-            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker://${ORG_NAME}/${IMAGE}@${digest}"
+            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${digest}"
           done
           # Create and upload a multi-arch manifest
           args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
           for digest in "${digests[@]}"; do
-            args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
+            args+=(--amend "${digest}")
           done
           docker "${args[@]}"
           manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-edge)
@@ -133,12 +133,12 @@ jobs:
             for rock in *.rock; do
               digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
               digests+=($digest)
-              rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker://${ORG_NAME}/${IMAGE}@${digest}"
+              rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${digest}"
             done
             # Create and upload a multi-arch manifest
             args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
             for digest in "${digests[@]}"; do
-              args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
+              args+=(--amend "${digest}")
             done
             docker "${args[@]}"
             manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-stable)
