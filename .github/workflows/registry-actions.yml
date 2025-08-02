@@ -106,7 +106,6 @@ jobs:
             args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
           done
           docker "${args[@]}"
-          manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-edge)
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
@@ -141,7 +140,6 @@ jobs:
               args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
             done
             docker "${args[@]}"
-            manifest=$(docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-stable)
             # Push to Docker Hub
             # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${USERNAME}:${VERSION}-stable
             # docker push ${USERNAME}/${IMAGE}:${VERSION}-stable
