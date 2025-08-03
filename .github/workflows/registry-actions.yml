@@ -126,7 +126,7 @@ jobs:
           # docker push ${USERNAME}/${IMAGE}:latest
 
           # Create and upload a multi-arch manifest for Github Packages
-          args=("manifest" "create" "${ORG_NAME}/${GITHUB_IMAGE}:${VERSION}-edge")
+          args=("manifest" "create" "${GITHUB_IMAGE}:${VERSION}-edge")
           for digest in "${digests[@]}"; do
             args+=("${GITHUB_IMAGE}@${digest}")
           done
