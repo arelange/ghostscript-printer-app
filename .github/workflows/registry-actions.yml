@@ -94,17 +94,12 @@ jobs:
           VERSION="$(yq '.version' rockcraft.yaml)"
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
           # Upload each rock to the container registry
-          declare -a digests=()
+          args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
           for rock in *.rock; do
-            digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
-            digests+=($digest)
-            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker://${ORG_NAME}/${IMAGE}@${digest}"
+            rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${rock}"
+            args+=(--amend "${ORG_NAME}/${IMAGE}:${rock}")
           done
           # Create and upload a multi-arch manifest
-          args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
-          for digest in "${digests[@]}"; do
-            args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
-          done
           docker "${args[@]}"
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
