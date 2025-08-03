@@ -101,8 +101,10 @@ jobs:
             args+=(--amend "${ORG_NAME}/${IMAGE}:${rock}")
           done
           # Create and upload a multi-arch manifest
+          echo "first test without arguments"
+          docker manifest create "${ORG_NAME}/${IMAGE}:${VERSION}-edge"
           echo "create multi-arch container with args: ${args[@]}"
-          sudo docker "${args[@]}"
+          docker "${args[@]}"
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
