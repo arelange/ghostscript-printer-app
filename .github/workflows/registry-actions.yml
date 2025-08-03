@@ -96,11 +96,13 @@ jobs:
           # Upload each rock to the container registry
           args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
           for rock in *.rock; do
+            echo "Create container from ${rock}"
             rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${rock}"
             args+=(--amend "${ORG_NAME}/${IMAGE}:${rock}")
           done
           # Create and upload a multi-arch manifest
-          docker "${args[@]}"
+          echo "create multi-arch container with args: ${args[@]}"
+          sudo docker "${args[@]}"
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
