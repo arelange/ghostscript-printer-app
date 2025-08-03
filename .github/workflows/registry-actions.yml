@@ -99,7 +99,7 @@ jobs:
             echo "Create container from ${rock}"
             digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
             echo "Digest: ${digest}"
-            ARCH=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Platform.Architecture }}")
+            ARCH=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Architecture }}")
             echo "Architecture: ${ARCH}"
             rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge"
           done
