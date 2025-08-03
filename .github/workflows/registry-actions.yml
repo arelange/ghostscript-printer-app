@@ -93,6 +93,7 @@ jobs:
           IMAGE="$(yq '.name' rockcraft.yaml)"
           VERSION="$(yq '.version' rockcraft.yaml)"
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
+          GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
           # Upload each rock to the container registry
           declare -a digests=()
           for rock in *.rock; do
@@ -103,21 +104,35 @@ jobs:
             ARCH=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Architecture }}")
             echo "Architecture: ${ARCH}"
             rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge"
+            # Push to Docker Hub
+            # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge ${USERNAME}:${VERSION}-${ARCH}-edge
+            # docker push ${USERNAME}/${IMAGE}:${VERSION}-${ARCH}-edge
+            # Push to GitHub Packages
+            docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge ${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge
+            docker push ${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge
           done
-          args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
-          for digest in "${digests[@]}"; do
-            args+=("${ORG_NAME}/${IMAGE}@${digest}")
-          done
-          # Create and upload a multi-arch manifest
-          echo "create multi-arch container with args: ${args[@]}"
-          docker "${args[@]}"
+
+          # Create and upload a multi-arch manifest for Docker Hub
+          # args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
+          # for digest in "${digests[@]}"; do
+          #   args+=("${ORG_NAME}/${IMAGE}@${digest}")
+          # done
+          # echo "create multi-arch container with args: ${args[@]}"
+          # docker "${args[@]}"
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
           # docker tag ${USERNAME}/${IMAGE}:${VERSION}-edge ${USERNAME}/${IMAGE}:latest
           # docker push ${USERNAME}/${IMAGE}:latest
+
+          # Create and upload a multi-arch manifest for Github Packages
+          args=("manifest" "create" "${ORG_NAME}/${GITHUB_IMAGE}:${VERSION}-edge")
+          for digest in "${digests[@]}"; do
+            args+=("${GITHUB_IMAGE}@${digest}")
+          done
+          echo "create multi-arch container with args: ${args[@]}"
+          docker "${args[@]}"
           # Push to GitHub Packages
-          GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
           docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:${VERSION}-edge
           docker push ${GITHUB_IMAGE}:${VERSION}-edge
           docker tag ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:latest
