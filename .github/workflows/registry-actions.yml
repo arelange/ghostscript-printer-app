@@ -94,7 +94,7 @@ jobs:
           VERSION="$(yq '.version' rockcraft.yaml)"
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
           # Upload each rock to the container registry
-          args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
+          args=("manifest" "create" "--insecure" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
           for rock in *.rock; do
             echo "Create container from ${rock}"
             rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${rock}"
@@ -132,7 +132,7 @@ jobs:
               rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker://${ORG_NAME}/${IMAGE}@${digest}"
             done
             # Create and upload a multi-arch manifest
-            args=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
+            args=("manifest" "create" "--insecure" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
             for digest in "${digests[@]}"; do
               args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
             done
