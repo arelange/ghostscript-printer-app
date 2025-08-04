@@ -126,8 +126,10 @@ jobs:
           docker "${GITHUB_MANIFEST[@]}"
           # Push to GitHub Packages
           docker manifest push ${GITHUB_IMAGE}:${VERSION}-edge
-          docker manifest create ${GITHUB_IMAGE}:latest ${GITHUB_IMAGE}:${VERSION}-edge
-          docker manifest push ${GITHUB_IMAGE}:latest
+          # pulling back the complete image to tag it as latest
+          docker pull ${GITHUB_IMAGE}:${VERSION}-edge
+          docker tag ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:latest
+          docker push ${GITHUB_IMAGE}:latest
 
       - name: Build and Push Docker Image (Stable Channel)
         if: github.event.inputs.workflow_choice == 'stable' || github.event.inputs.workflow_choice == 'both'
