@@ -95,7 +95,7 @@ jobs:
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
           GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
           #DOCKER_MANIFEST=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
-          GITHUB_MANIFEST=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
+          GITHUB_MANIFEST=("manifest" "create" "${GITHUB_IMAGE}:${VERSION}-edge")
           # Upload each rock to the container registry
           for rock in *.rock; do
             echo "Create container from ${rock}"
@@ -128,8 +128,7 @@ jobs:
           echo "create multi-arch container with args: ${GITHUB_MANIFEST[@]}"
           docker "${GITHUB_MANIFEST[@]}"
           # Push to GitHub Packages
-          docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:${VERSION}-edge
-          docker push ${GITHUB_IMAGE}:${VERSION}-edge
+          #docker push ${GITHUB_IMAGE}:${VERSION}-edge
           docker tag ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:latest
           docker push ${GITHUB_IMAGE}:latest
 
