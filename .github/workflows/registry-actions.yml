@@ -99,9 +99,6 @@ jobs:
           # Upload each rock to the container registry
           for rock in *.rock; do
             echo "Create container from ${rock}"
-            digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
-            echo "Digest: ${digest}"
-            digests+=($digest)
             ARCH=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Architecture }}")
             echo "Architecture: ${ARCH}"
             rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge"
@@ -128,6 +125,7 @@ jobs:
           echo "create multi-arch container with args: ${GITHUB_MANIFEST[@]}"
           docker "${GITHUB_MANIFEST[@]}"
           # Push to GitHub Packages
+          docker manifest push ${GITHUB_IMAGE}:${VERSION}-edge
           #docker push ${GITHUB_IMAGE}:${VERSION}-edge
           docker tag ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:latest
           docker push ${GITHUB_IMAGE}:latest
@@ -141,23 +139,35 @@ jobs:
             IMAGE="$(yq '.name' rockcraft.yaml)"
             VERSION="$(yq '.version' rockcraft.yaml)"
             ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
+            GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
+            #DOCKER_MANIFEST=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
+            GITHUB_MANIFEST=("manifest" "create" "${GITHUB_IMAGE}:${VERSION}-stable")
             # Upload each rock to the container registry
-            declare -a digests=()
             for rock in *.rock; do
-              digest=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Digest }}")
-              digests+=($digest)
-              rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker://${ORG_NAME}/${IMAGE}@${digest}"
+              echo "Create container from ${rock}"
+              ARCH=$(rockcraft.skopeo --insecure-policy inspect "oci-archive:${rock}" --format "{{ .Architecture }}")
+              echo "Architecture: ${ARCH}"
+              rockcraft.skopeo --insecure-policy copy oci-archive:${rock} "docker-daemon:${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable"
+              # Push to Docker Hub
+              # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable ${USERNAME}:${VERSION}-${ARCH}-stable
+              # docker push ${USERNAME}/${IMAGE}:${VERSION}-${ARCH}-stable
+              # DOCKER_MANIFEST+=("${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable")
+              # Push to GitHub Packages
+              docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable ${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable
+              docker push ${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable
+              GITHUB_MANIFEST+=("${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable")
             done
-            # Create and upload a multi-arch manifest
-            args=("manifest" "create" "--insecure" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
-            for digest in "${digests[@]}"; do
-              args+=(--amend "${ORG_NAME}/${IMAGE}@${digest}")
-            done
-            docker "${args[@]}"
+
+            # Create and upload a multi-arch manifest for Docker Hub
+            # echo "create multi-arch container with args: ${DOCKER_MANIFEST[@]}"
+            # docker "${DOCKER_MANIFEST[@]}"
             # Push to Docker Hub
             # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${USERNAME}:${VERSION}-stable
             # docker push ${USERNAME}/${IMAGE}:${VERSION}-stable
+
+            # Create and upload a multi-arch manifest for Github Packages
+            echo "create multi-arch container with args: ${GITHUB_MANIFEST[@]}"
+            docker "${GITHUB_MANIFEST[@]}"
             # Push to GitHub Packages
-            GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
-            docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${GITHUB_IMAGE}:${VERSION}-stable
-            docker push ${GITHUB_IMAGE}:${VERSION}-stable
+            docker manifest push ${GITHUB_IMAGE}:${VERSION}-stable
+            #docker push ${GITHUB_IMAGE}:${VERSION}-stable
