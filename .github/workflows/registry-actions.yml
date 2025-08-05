@@ -94,8 +94,8 @@ jobs:
           VERSION="$(yq '.version' rockcraft.yaml)"
           ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
           GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
-          #DOCKER_MANIFEST=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-edge")
-          GITHUB_MANIFEST=("manifest" "create" "${GITHUB_IMAGE}:${VERSION}-edge")
+          #declare -a DOCKER_MANIFESTS=()
+          declare -a GITHUB_MANIFESTS=()
           # Upload each rock to the container registry
           for rock in *.rock; do
             echo "Create container from ${rock}"
@@ -105,16 +105,16 @@ jobs:
             # Push to Docker Hub
             # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge ${USERNAME}:${VERSION}-${ARCH}-edge
             # docker push ${USERNAME}/${IMAGE}:${VERSION}-${ARCH}-edge
-            # DOCKER_MANIFEST+=("${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge")
+            # DOCKER_MANIFESTS+=("${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge")
             # Push to GitHub Packages
             docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-edge ${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge
             docker push ${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge
-            GITHUB_MANIFEST+=("${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge")
+            GITHUB_MANIFESTS+=("${GITHUB_IMAGE}:${VERSION}-${ARCH}-edge")
           done
 
           # Create and upload a multi-arch manifest for Docker Hub
-          # echo "create multi-arch container with args: ${DOCKER_MANIFEST[@]}"
-          # docker "${DOCKER_MANIFEST[@]}"
+          # echo "create multi-arch container from: ${DOCKER_MANIFESTS[@]}"
+          # docker manifest create ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${DOCKER_MANIFESTS[@]}
           # Push to Docker Hub
           # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-edge ${USERNAME}:${VERSION}-edge
           # docker push ${USERNAME}/${IMAGE}:${VERSION}-edge
@@ -122,14 +122,11 @@ jobs:
           # docker push ${USERNAME}/${IMAGE}:latest
 
           # Create and upload a multi-arch manifest for Github Packages
-          echo "create multi-arch container with args: ${GITHUB_MANIFEST[@]}"
-          docker "${GITHUB_MANIFEST[@]}"
-          # Push to GitHub Packages
+          echo "create multi-arch container from: ${GITHUB_MANIFESTS[@]}"
+          docker manifest create ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_MANIFESTS[@]}
           docker manifest push ${GITHUB_IMAGE}:${VERSION}-edge
-          # pulling back the complete image to tag it as latest
-          docker pull ${GITHUB_IMAGE}:${VERSION}-edge
-          docker tag ${GITHUB_IMAGE}:${VERSION}-edge ${GITHUB_IMAGE}:latest
-          docker push ${GITHUB_IMAGE}:latest
+          docker manifest create ${GITHUB_IMAGE}:latest ${GITHUB_MANIFESTS[@]}
+          docker manifest push ${GITHUB_IMAGE}:latest
 
       - name: Build and Push Docker Image (Stable Channel)
         if: github.event.inputs.workflow_choice == 'stable' || github.event.inputs.workflow_choice == 'both'
@@ -141,8 +138,8 @@ jobs:
             VERSION="$(yq '.version' rockcraft.yaml)"
             ORG_NAME=$(echo "${ORG}" | tr '[:upper:]' '[:lower:]')
             GITHUB_IMAGE="ghcr.io/${ORG_NAME}/${IMAGE}"
-            #DOCKER_MANIFEST=("manifest" "create" "${ORG_NAME}/${IMAGE}:${VERSION}-stable")
-            GITHUB_MANIFEST=("manifest" "create" "${GITHUB_IMAGE}:${VERSION}-stable")
+            #declare -a DOCKER_MANIFESTS=()
+            declare -a GITHUB_MANIFESTS=()
             # Upload each rock to the container registry
             for rock in *.rock; do
               echo "Create container from ${rock}"
@@ -152,22 +149,19 @@ jobs:
               # Push to Docker Hub
               # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable ${USERNAME}:${VERSION}-${ARCH}-stable
               # docker push ${USERNAME}/${IMAGE}:${VERSION}-${ARCH}-stable
-              # DOCKER_MANIFEST+=("${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable")
+              # DOCKER_MANIFESTS+=("${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable")
               # Push to GitHub Packages
               docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-${ARCH}-stable ${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable
               docker push ${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable
-              GITHUB_MANIFEST+=("${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable")
+              GITHUB_MANIFESTS+=("${GITHUB_IMAGE}:${VERSION}-${ARCH}-stable")
             done
 
             # Create and upload a multi-arch manifest for Docker Hub
-            # echo "create multi-arch container with args: ${DOCKER_MANIFEST[@]}"
-            # docker "${DOCKER_MANIFEST[@]}"
-            # Push to Docker Hub
-            # docker tag ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${USERNAME}:${VERSION}-stable
-            # docker push ${USERNAME}/${IMAGE}:${VERSION}-stable
+            # echo "create multi-arch container from: ${DOCKER_MANIFESTS[@]}"
+            # docker manifest create ${ORG_NAME}/${IMAGE}:${VERSION}-stable ${DOCKER_MANIFESTS[@]}
+            # docker manifest push ${ORG_NAME}/${IMAGE}:${VERSION}-stable
 
             # Create and upload a multi-arch manifest for Github Packages
-            echo "create multi-arch container with args: ${GITHUB_MANIFEST[@]}"
-            docker "${GITHUB_MANIFEST[@]}"
-            # Push to GitHub Packages
+            echo "create multi-arch container from: ${GITHUB_MANIFESTS[@]}"
+            docker manifest create ${GITHUB_IMAGE}:${VERSION}-stable ${GITHUB_MANIFESTS[@]}
             docker manifest push ${GITHUB_IMAGE}:${VERSION}-stable
