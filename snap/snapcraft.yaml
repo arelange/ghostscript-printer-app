@@ -1,6 +1,6 @@
 name: ghostscript-printer-app
 base: core22
-version: '10.05.1-1'
+version: '10.08.0-1'
 grade: stable
 summary: Ghostscript Printer Application
 description: |
@@ -36,7 +36,7 @@ parts:
   pappl:
     source: https://github.com/michaelrsweet/pappl
     source-type: git
-    source-tag: 'v1.4.9'
+    source-tag: 'v1.4.12'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -199,7 +199,7 @@ parts:
     #source: https://git.ghostscript.com/ghostpdl.git
     source: https://github.com/ArtifexSoftware/ghostpdl.git
     source-type: git
-    source-tag: 'ghostpdl-10.05.1rc1_test002'
+    source-tag: 'ghostpdl-10.08.0'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -246,7 +246,7 @@ parts:
   cups:
     source: https://github.com/OpenPrinting/cups
     source-type: git
-    source-tag: 'v2.4.12'
+    source-tag: 'v2.4.20'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -350,7 +350,7 @@ parts:
   libcupsfilters:
     source: https://github.com/OpenPrinting/libcupsfilters
     source-type: git
-    source-tag: '2.1.1'
+    source-tag: '2.2.1'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -659,7 +659,7 @@ parts:
     # Debian source
     source: https://salsa.debian.org/printing-team/hplip.v2.git
     source-type: git
-    source-tag: 'debian/3.22.10+dfsg0-8'
+    source-tag: 'debian/3.26.4+dfsg0-3'
 # ext:updatesnap
 #   version-format:
 #     format: 'debian/%V'
@@ -884,7 +884,7 @@ parts:
     # Original homepage: http://pnm2ppa.sourceforge.net/
     source: https://salsa.debian.org/printing-team/pnm2ppa.git
     source-type: git
-    source-tag: debian/1.13-13
+    source-tag: 'debian/1.13-14'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -999,7 +999,7 @@ parts:
     # HPLIP Printer Application (with plugin loaded in-app) should be used.
     source: https://salsa.debian.org/printing-team/foo2zjs.git
     source-type: git
-    source-tag: 'debian/20200505dfsg0-3'
+    source-tag: 'debian/20200505dfsg0-5'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -1292,7 +1292,7 @@ parts:
     #                    https://sourceforge.net/projects/splix/
     source: https://salsa.debian.org/printing-team/splix.git
     source-type: git
-    source-tag: 'debian/2.0.1-1'
+    source-tag: 'debian/2.0.1-2'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
@@ -1335,7 +1335,7 @@ parts:
     # Original GIT: https://github.com/pdewacht/brlaser.git
     source: https://github.com/Owl-Maintain/brlaser.git
     source-type: git
-    source-tag: 'v6.2.7'
+    source-tag: 'v6.2.8'
     source-depth: 1
 # ext:updatesnap
 #   version-format:
