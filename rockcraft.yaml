@@ -557,12 +557,15 @@ parts:
 #     format: 'release-%M-%m-%R'
 #     lower-than: '2'
 #     no-9x-revisions: true
-    plugin: python
+    plugin: nil
     build-packages:
       - python3.10
+      - python3-pip
     stage-packages:
       - python3.10
-    override-prime: ""
+    override-build: |
+      set -eux
+      pip install --prefix="$CRAFT_PART_INSTALL/usr" --no-build-isolation .
 
   foomatic-db:
     source: https://github.com/OpenPrinting/foomatic-db
